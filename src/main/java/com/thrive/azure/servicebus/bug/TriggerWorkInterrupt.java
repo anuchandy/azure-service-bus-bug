@@ -17,6 +17,7 @@ public class TriggerWorkInterrupt {
 
     private static final AtomicBoolean RUNNING = new AtomicBoolean(true);
     private static final Duration SESSION_IDLE_TIMEOUT = Duration.ofSeconds(5);
+    private static final String V2_SESSION_PROCESSOR_CONFIGURATION_KEY = "com.azure.messaging.servicebus.session.processor.asyncReceive.v2";
 
     static void processMessage(ServiceBusReceivedMessageContext msg) {
         try {
@@ -28,7 +29,7 @@ public class TriggerWorkInterrupt {
             msg.complete();
             LOG.info("Finished handling message for session: {} message: {}", msg.getMessage().getSessionId(), msg.getMessage().getMessageId());
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("InterruptedException on session: " + msg.getMessage().getSessionId(), e);
         }
     }
 
@@ -54,6 +55,9 @@ public class TriggerWorkInterrupt {
         ServiceBusProcessorClient processor = new ServiceBusClientBuilder()
                 .fullyQualifiedNamespace(Config.FULLY_QUALIFIED_NAMESPACE)
                 .credential(Config.CREDENTIAL)
+                .configuration(new com.azure.core.util.ConfigurationBuilder()
+                        .putProperty(V2_SESSION_PROCESSOR_CONFIGURATION_KEY, "true") // 'false' by default, so opt-in to enable V2.
+                        .build())
                 .sessionProcessor()
                 .topicName(Config.TOPIC)
                 .subscriptionName(Config.SUBSCRIPTION)
