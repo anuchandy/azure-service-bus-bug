@@ -52,6 +52,10 @@ public class TriggerWorkInterrupt {
     }
 
     public static void main(String... args) {
+        run();
+    }
+
+    private static void run() {
         ServiceBusProcessorClient processor = new ServiceBusClientBuilder()
                 .fullyQualifiedNamespace(Config.FULLY_QUALIFIED_NAMESPACE)
                 .credential(Config.CREDENTIAL)
